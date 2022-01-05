@@ -1,0 +1,112 @@
+package main;
+
+import java.io.*;
+import java.util.*;
+
+//Classe DatiLega, quella che svolgerà la elaborazione del file e passerà l'output
+class DatiLega {
+	
+	//variabili di istanza
+	private String link;
+	private Scanner scanner;
+	private int delta = 9999;
+	private String squadra;
+
+	//Compilatore
+	public DatiLega(String link) {
+		this.link = link;
+		CreazioneFile();
+	}
+	
+	//Crea ed apre il file all'interno del programma, permettendone la lettura o meglio, in questo caso,
+	//la scansione.
+	private void CreazioneFile() {
+		File file = new File(link);
+		try {
+			scanner = new Scanner(file);
+			Esecuzione();
+				
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+			
+	}
+		
+	//Funzione che permette di tagliare una stringa, ho scelto di renderla una funzione a sé stante per
+	//riusabilità
+	private String TrimSequence(String taglio) {
+		taglio = taglio.trim();
+		return taglio;
+	}
+
+	//Lettura del file ed esecuzione della richiesta
+	private void Esecuzione() {
+		do {
+			//Creazione della variabile che legge le righe
+			String line = new String (scanner.nextLine());
+			line = TrimSequence(line);
+			//Controlla se e la prima riga o la riga e vuota--------------------
+			if( (line.startsWith("Team")) || (line.startsWith("-")) || (line.length() == 0) )	{
+				continue;
+			}
+			//------------------------------------------------------------------
+			//---------------------------------ACQUISIZIONE DATI DI INTERESSE----------------------------------------------------------------------------
+			
+			String[] sottostringa = line.split(" ");
+			String [] elementi = new String[9];
+			//Qui, avendo gli elementi non più vicini ed in sequenza, ho preferito scorrere i dati fino al richiesto e poi prendere quelli 
+			//che servivano
+			int count = 0;
+			for (int i = 0; (i < sottostringa.length) && (count < 9); i++) {
+				if(sottostringa[i] != "") {
+					elementi[count] = sottostringa[i];
+					count++;
+				}
+			}
+				
+			//--------------------------------ASSEGNAZIONE VALORI------------------------------------------------------------------------------------------
+			//Acquisizione squadra
+			String sostegno  = elementi[1];
+			//Acquisizione goal segnati
+			String F = elementi[6];
+			//Acquisizione goal subiti
+			String A = elementi[8];
+			//---------------------------------------------------------------------------------------------------------------------------------------------
+				
+			//Calcolo valore massimo fra i due goal
+			int deltaAtt = Math.abs(Integer.parseInt(F)-Integer.parseInt(A));
+				
+			//Controllo se il valore appena registrato e' minore a quello minimo gia' conosciuto
+			if(delta > deltaAtt) {
+				//Salvataggio dei nuovi dati
+				delta = deltaAtt;
+				squadra = sostegno; 
+			}
+		}
+		//Fino a che il file contiene qualcosa, ciclalo
+		while(scanner.hasNextLine());
+		//Chiusura file
+		scanner.close();
+	}
+	
+	//Metodo pubblico accessibile da ovunque così che possa essere sempre disponibile il dato
+	public int Risultato () {
+		return delta;
+	}
+	
+	//Metodo pubblico accessibile da ovunque così che possa essere sempre disponibile il dato
+	public String Squadra () {
+		return squadra;
+	}
+}
+
+//Classe utente, colui che va a fornire la posizione del file e fa ritornare i dati richiesti
+public class UtilizzaDatiLega	{
+	public static void main(String[] args) {
+		DatiLega link = new DatiLega ("C:\\Users\\apt\\Documents\\Java\\Lega Football\\src\\football.dat");
+		String squadra = link.Squadra();
+		int risultato = link.Risultato();
+		System.out.println("La minore differenza tra segnati e subiti (" + risultato + ") e' da " + squadra);
+	}
+
+}
